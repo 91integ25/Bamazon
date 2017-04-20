@@ -15,6 +15,7 @@ connection.connect(function (err){
 	}
 	displayItems();
 });
+
 function buyMore(){
 	inquirer.prompt([
 		{
@@ -27,7 +28,9 @@ function buyMore(){
 				if(user.confirm){
 					displayItems();
 				}else{
-					console.log("Thank you for shopping at Bamazon")
+
+					console.log("Thank you for shopping at Bamazon");
+					process.exit(0);
 				}
 		})
 }
@@ -61,24 +64,40 @@ function askPurchase(products){
 ]).then(function(user){
 	var itemChosen = products.slice(user.item_id - 1, user.item_id);
 
+
 	itemChosen.map(function(e){
 
-if(e.stock_quantity < user.quantity){
-	console.log("There is not enough in stock");
-}
-else{
-	var remaining = e.stock_quantity - user.quantity;
-	connection.query(
-		"update products set stock_quantity = ? where item_id = ?",
-		[remaining,user.item_id],
-		function(err){
-			if(err){
-				throw err;
-			}
-		});
-	console.log(e.product_name, " Purchased")
-	buyMore();
-}
+		if(e.stock_quantity < user.quantity){
+			console.log("There is not enough in stock");
+		}
+		else{
+			totalSales(user.quantity,itemChosen,user.item_id);
+			var remaining = Number(e.stock_quantity) - Number(user.quantity);
+			connection.query(
+				"update products set stock_quantity = ? where item_id = ?",
+				[remaining,user.item_id],
+				function(err){
+					if(err){
+						throw err;
+					}
+				});
+			console.log( user.quantity,e.product_name, "Purchased")
+			buyMore();
+		}
+	});
 });
-});
+}
+
+function totalSales(sold,item,id){
+	item.map(function(e){
+		var totalSold = Number(e.price) * Number(sold);
+		connection.query(
+			"update products set product_sales=? where item_id =?",
+			[totalSold,id],
+			function(err){
+				if(err){
+					throw err;
+				}
+			})
+	});
 }
