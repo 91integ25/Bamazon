@@ -1,6 +1,9 @@
 var mysql = require("mysql");
 var inquirer = require("inquirer");
-
+var Table = require('cli-table');
+var table = new Table({
+	head:["Item id","Product name","Price","Product sales","Stock quantity"]
+})
 var connection = mysql.createConnection({
 	host:"localhost",
 	port:3306,
@@ -27,6 +30,7 @@ function buyMore(){
 		]).then(function(user){
 				if(user.confirm){
 					displayItems();
+					table.splice(0,table.length);
 				}else{
 
 					console.log("Thank you for shopping at Bamazon");
@@ -41,10 +45,15 @@ connection.query(
 		if(err){
 			throw err;
 		}
-		console.log("Products Available")
-		res.map(function(e){
-			console.log("Item ID: ",e.item_id," || Product: ",e.product_name," || Price: ",e.price," || In stock: ", e.stock_quantity);
+		var itemArr = res.map(function(e){
+			return[e.item_id,e.product_name,e.price,e.product_sales,e.stock_quantity];
 		});
+		
+		for(var i = 0; i < itemArr.length; i++){
+			table.push(itemArr[i]);
+		}
+		console.log(table.toString());
+
 		askPurchase(res);
 });
 }
@@ -69,8 +78,7 @@ function askPurchase(products){
 
 		if(e.stock_quantity < user.quantity){
 			console.log("There is not enough in stock");
-		}
-		else{
+		}else{
 			totalSales(user.quantity,itemChosen,user.item_id);
 			var remaining = Number(e.stock_quantity) - Number(user.quantity);
 			connection.query(
@@ -91,6 +99,8 @@ function askPurchase(products){
 function totalSales(sold,item,id){
 	item.map(function(e){
 		var totalSold = Number(e.price) * Number(sold);
+		console.log(totalSold)
+		var overhead = Number(e.price) * 200;
 		connection.query(
 			"update products set product_sales=? where item_id =?",
 			[totalSold,id],
@@ -98,6 +108,15 @@ function totalSales(sold,item,id){
 				if(err){
 					throw err;
 				}
-			})
+			});
+
+		connection.query(
+			"update departments set total_sales = ? where department_name = ?",
+			[totalSold,e.department_name],
+			function(err){
+				if(err){
+					throw err;
+				}
+			});
 	});
 }

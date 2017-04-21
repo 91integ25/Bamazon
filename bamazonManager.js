@@ -1,6 +1,12 @@
 var mysql = require("mysql");
 var inquirer = require("inquirer");
-
+var Table = require('cli-table');
+var table = new Table({
+	head:["Item id","Product name","Price","Stock quantity"]
+})
+var invTable = new Table({
+	head:["Item id","Product name","Price","Stock quantity"]
+})
 var connection = mysql.createConnection({
 	host:"localhost",
 	port:3306,
@@ -41,7 +47,7 @@ function options(){
 
 				break;
 			}
-		})
+		});
 }
 
 function products(){
@@ -51,22 +57,40 @@ function products(){
 			if(err){
 				throw err;
 			}
-			res.map(function(e){
-				console.log("Item Id: ",e.item_id, " || Products: ",e.product_name," || Price: ",e.price, " || Quantity: ", e.stock_quantity);
-			})
-		})
+			var itemArr = res.map(function(e){
+				return [e.item_id,e.product_name,e.price,e.stock_quantity];
+			});
+			for(var i = 0;i < itemArr.length;i++){
+				table.push(itemArr[i]);
+			}
+			console.log(table.toString());
+			somethingElse();
+		});
+
 }
 
 function lowInventory(){
 	connection.query(
 		"select * from products where stock_quantity < 5",
 		function(err,res){
-				if(err){
-					throw err;
-				}
-				res.map(function(e){
-					console.log("Product: ",e.product_name," || Quantity: ", e.stock_quantity);
-				});
+			if(err){
+				throw err;
+			}
+			var itemArr = res.map(function(e){
+				return [e.item_id,e.product_name,e.price,e.stock_quantity];
+			});
+			for(var i = 0;i < itemArr.length;i++){
+				invTable.push(itemArr[i]);
+			}
+			if(itemArr[0]){
+				console.log(invTable.toString());
+			somethingElse();
+			}
+			else{
+				console.log("All inventory has Stock quantity above 5");
+				somethingElse();
+			}
+			
 		});
 }
 
@@ -78,9 +102,14 @@ connection.query(
 				throw err;
 			}
 		
-	res.map(function(e){
-		console.log("Item ID: ",e.item_id," || Product: ",e.product_name," || In stock: ", e.stock_quantity);
-	});
+		var itemArr = res.map(function(e){
+			return [e.item_id,e.product_name,e.price,e.stock_quantity];
+		});
+		for(var i = 0;i < itemArr.length;i++){
+			table.push(itemArr[i]);
+		}
+
+		console.log(table.toString());
 
 	inquirer.prompt([
 		{
@@ -106,6 +135,8 @@ connection.query(
 					throw err;
 				}
 			});
+			somethingElse();
+			
 		});
 
 	});
@@ -138,12 +169,32 @@ function newProduct(){
 		]).then(function(u){
 			
 			connection.query(
-				"INSERT INTO products(product_name,department_name,price,stock_quantity) VALUES(?,?,?,?)",
-				[u.product,u.dept,u.price,u.quantity],
+				"INSERT INTO products(product_name,department_name,price,stock_quantity,product_sales) VALUES(?,?,?,?,?)",
+				[u.product,u.dept,u.price,u.quantity,0],
 				function(err){
 					if(err){
 						throw err;
 					}
 				});
+			somethingElse();
 		});
+}
+function somethingElse(){
+	inquirer.prompt([
+		{
+			name:"confirm",
+			message:"Would you like to do something else?",
+			type:"confirm"
+		}
+
+		]).then(function(user){
+				if(user.confirm){
+					table.splice(0,table.length);
+					options();
+				}else{
+
+					console.log("Have a good day!");
+					process.exit(0);
+				}
+		})
 }
