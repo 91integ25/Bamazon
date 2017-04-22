@@ -3,10 +3,8 @@ var inquirer = require("inquirer");
 var Table = require('cli-table');
 var table = new Table({
 	head:["Item id","Product name","Price","Stock quantity"]
-})
-var invTable = new Table({
-	head:["Item id","Product name","Price","Stock quantity"]
-})
+});
+
 var connection = mysql.createConnection({
 	host:"localhost",
 	port:3306,
