@@ -55,7 +55,7 @@ function askPurchase(products){
 				console.log("There is not enough in stock");
 			}
 			else{
-				totalDep(products,e.department_name);
+				totalDep(products,e.department_name,e.price);
 				totalProducts(user.quantity,itemChosen,user.item_id);
 				var remaining = Number(e.stock_quantity) - Number(user.quantity);
 				connection.query(
@@ -107,17 +107,19 @@ function totalProducts(sold,item,id){
 		});
 	});
 }
-function totalDep(products,dep){
-	var totalArr = []
+function totalDep(products,dep,price){
+	var totalArr = [];
+		totalArr.push(price);
+		
 	for(var i = 0;i<products.length;i++){
 		if(products[i].department_name === dep){
 			totalArr.push(products[i].product_sales);
 		}
 	}
+
 	var totalSales = totalArr.reduce(function(a,b){
 		return a + b;
 	})
-	console.log(totalSales);
 	connection.query(
 		"update departments set total_sales= ? where department_name = ?",
 		[totalSales,dep],
