@@ -55,7 +55,8 @@ function askPurchase(products){
 				console.log("There is not enough in stock");
 			}
 			else{
-				totalSales(user.quantity,itemChosen,user.item_id);
+				totalDep(products,e.department_name);
+				totalProducts(user.quantity,itemChosen,user.item_id);
 				var remaining = Number(e.stock_quantity) - Number(user.quantity);
 				connection.query(
 					"update products set stock_quantity = ? where item_id = ?",
@@ -93,10 +94,9 @@ function buyMore(){
 	});
 }
 // updating products table and departments table
-function totalSales(sold,item,id){
+function totalProducts(sold,item,id){
 	item.map(function(e){
 		var totalSold = Number(e.price) * Number(sold) + e.product_sales;
-		var overhead = Number(e.price) * 200;
 		connection.query(
 			"update products set product_sales=? where item_id =?",
 			[totalSold,id],
@@ -105,13 +105,25 @@ function totalSales(sold,item,id){
 					throw err;
 				}
 		});
-		connection.query(
-			"update departments set total_sales = ? where department_name = ?",
-			[totalSold,e.department_name],
-			function(err){
-				if(err){
-					throw err;
-				}
-		});
 	});
+}
+function totalDep(products,dep){
+	var totalArr = []
+	for(var i = 0;i<products.length;i++){
+		if(products[i].department_name === dep){
+			totalArr.push(products[i].product_sales);
+		}
+	}
+	var totalSales = totalArr.reduce(function(a,b){
+		return a + b;
+	})
+	console.log(totalSales);
+	connection.query(
+		"update departments set total_sales= ? where department_name = ?",
+		[totalSales,dep],
+		function(err){
+			if(err){
+				throw err;
+			}
+		})
 }
