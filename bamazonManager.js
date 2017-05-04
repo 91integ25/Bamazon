@@ -143,10 +143,10 @@ function newProduct(){
 			message:"Enter quantity.",
 			type:"input"
 		}
-	]).then(function(u){
+	]).then(function(user){
 		connection.query(
 			"INSERT INTO products(product_name,department_name,price,stock_quantity,product_sales) VALUES(?,?,?,?,?)",
-			[u.product,u.dept,u.price,u.quantity,0],
+			[user.product,user.dept,user.price,user.quantity,0],
 			function(err){
 				if(err){
 					throw err;
