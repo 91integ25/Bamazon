@@ -1,7 +1,7 @@
 <h1>Bamazon</h1>
 
 
-This is a Node.js CLI project that incorporates a MySQL database in order to store,update,delete and create inventory data. There are three different tiers that you can run each does something different.They are customer,manager and supervisor. If you would like to run this application please clone the project and run the seeds file and schema file in MySQL workbench.
+This is a Node.js CLI project that incorporates a MySQL database in order to create,read,update and delete inventory data. There are three different tiers that you can run each does something different.They are customer,manager and supervisor. If you would like to run this application please clone the project and run the seeds file and schema file in MySQL workbench.
 
 
 
